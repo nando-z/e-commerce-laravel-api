@@ -12,7 +12,9 @@ class ImageController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json([
+            'images' => Images::all(),
+        ]);
     }
 
     /**
@@ -28,7 +30,17 @@ class ImageController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+            'lable' => ['required', 'string', 'max:255', 'min:3'],
+        ]);
+
+        $image = Images::create($data);
+
+        return response()->json([
+            'message' => 'Image created successfully',
+            'image' => $image,
+        ], 201);
     }
 
     /**
