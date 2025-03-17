@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Images;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Request;
 
 class ImageController extends Controller
 {
@@ -12,59 +13,33 @@ class ImageController extends Controller
      */
     public function index()
     {
-        return response()->json([
-            'images' => Images::all(),
-        ]);
+        /**
+         * @var Images[] $images
+         *               this returns all the images but in formate as array
+         */
+        return Images::all()
+            ->map(function ($image) {
+                return [
+                    'id' => $image->id,
+                    'url' => url(Storage::url($image->path)),
+                    'label' => $image->label,
+                ];
+            });
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * store the form for creating a new resource.
      */
     public function store(Request $request)
     {
         $data = $request->validate([
+            'label' => ['nullable', 'string ', 'min:3', 'max:255', 'unique:images'],
             'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
-            'lable' => ['required', 'string', 'max:255', 'min:3'],
         ]);
 
-        $image = Images::create($data);
+        $path = $request->file('image')->store('images', 'public');
 
-        return response()->json([
-            'message' => 'Image created successfully',
-            'image' => $image,
-        ], 201);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Images $images)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Images $images)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Images $images)
-    {
-        //
+        return Images::create($data);
     }
 
     /**
